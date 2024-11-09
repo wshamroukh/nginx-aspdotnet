@@ -18,11 +18,12 @@ runcmd:
   - apt update && apt-get install -y dotnet-sdk-8.0 nginx git
   - mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak
   - cd /etc/nginx/sites-available/ && curl -O https://raw.githubusercontent.com/wshamroukh/ngnix-aspdotnet/refs/heads/main/default
-  - sudo git clone https://github.com/jelledruyts/InspectorGadget /var/www/InspectorGadget
-  - sudo mv /var/www/InspectorGadget/WebApp /var/www/ && sudo rm -rf /var/www/InspectorGadget
+  - git clone https://github.com/jelledruyts/InspectorGadget /var/www/InspectorGadget
+  - mv /var/www/InspectorGadget/WebApp /var/www/ && rm -rf /var/www/InspectorGadget
   - cd /etc/systemd/system/ && curl -O https://raw.githubusercontent.com/wshamroukh/ngnix-aspdotnet/refs/heads/main/inspectorg.service
   - systemctl enable inspectorg && systemctl start inspectorg
   - nginx -t && nginx -s reload
+  - reboot
 EOF
 
 # Resource Groups
@@ -37,7 +38,13 @@ az network vnet create -g $rg -n $spoke1_vnet_name -l $location --address-prefix
 echo -e "\e[1;36mDeploying $spoke1_vnet_name VM...\e[0m"
 az network public-ip create -g $rg -n $spoke1_vnet_name --sku basic --allocation-method Static -o none
 az network nic create -g $rg -n $spoke1_vnet_name -l $location --vnet-name $spoke1_vnet_name --subnet $spoke1_vm_subnet_name --public-ip-address $spoke1_vnet_name -o none
-az vm create -g $rg -n $spoke1_vnet_name -l $location --image $vm_image --nics $spoke1_vnet_name --os-disk-name $spoke1_vnet_name --size $vm_size --admin-username $admin_username --admin-password $admin_password --custom-data $cloudinit_file --no-wait
+az vm create -g $rg -n $spoke1_vnet_name -l $location --image $vm_image --nics $spoke1_vnet_name --os-disk-name $spoke1_vnet_name --size $vm_size --admin-username $admin_username --admin-password $admin_password --custom-data $cloudinit_file
 spoke1_vm_ip=$(az network nic show -g $rg -n $spoke1_vnet_name --query ipConfigurations[0].privateIPAddress -o tsv) && echo $spoke1_vnet_name vm private ip: $spoke1_vm_ip
 spoke1_vm_pip=$(az network public-ip show -g $rg -n $spoke1_vnet_name --query ipAddress -o tsv) && echo VM public IP: $spoke1_vm_pip
+rm $cloudinit_file
+
+# vm boot diagnostics
+echo -e "\e[1;36mEnabling VM boot diagnostics for $spoke1_vnet_name...\e[0m"
+az vm boot-diagnostics enable -g $rg -n $spoke1_vnet_name -o none
+
 echo try to access the website after 2 minutes: http://$spoke1_vm_pip
