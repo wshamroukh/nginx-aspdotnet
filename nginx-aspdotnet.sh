@@ -17,10 +17,10 @@ cat <<EOF > $cloudinit_file
 runcmd:
   - apt update && apt-get install -y dotnet-sdk-8.0 nginx git
   - mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak
-  - cd /etc/nginx/sites-available/ && curl -O https://raw.githubusercontent.com/wshamroukh/ngnix-aspdotnet/refs/heads/main/default
+  - cd /etc/nginx/sites-available/ && curl -O https://raw.githubusercontent.com/wshamroukh/nginx-aspdotnet/refs/heads/main/default
   - git clone https://github.com/jelledruyts/InspectorGadget /var/www/InspectorGadget
   - mv /var/www/InspectorGadget/WebApp /var/www/ && rm -rf /var/www/InspectorGadget
-  - cd /etc/systemd/system/ && curl -O https://raw.githubusercontent.com/wshamroukh/ngnix-aspdotnet/refs/heads/main/inspectorg.service
+  - cd /etc/systemd/system/ && curl -O https://raw.githubusercontent.com/wshamroukh/nginx-aspdotnet/refs/heads/main/inspectorg.service
   - systemctl enable inspectorg && systemctl start inspectorg
   - nginx -t && nginx -s reload
   - reboot
