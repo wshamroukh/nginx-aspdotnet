@@ -23,7 +23,7 @@ runcmd:
   - cd /etc/systemd/system/ && curl -O https://raw.githubusercontent.com/wshamroukh/nginx-aspdotnet/refs/heads/main/inspectorg.service
   - systemctl enable inspectorg && systemctl start inspectorg
   - nginx -t && nginx -s reload
-  - reboot
+  - systemctl restart inspectorg
 EOF
 
 # Resource Groups
